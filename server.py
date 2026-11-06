@@ -5,17 +5,53 @@ I'm just playing around learning how things communicate over networks.
 - made by n_6, as a side project lwk.'''
 
 import socket
-import ipaddress
+from ipaddress import ip_address, IPv4Address, IPv6Address
 import sys
+import builtins
 
-host = input("Please set server ip: ")
-port = int(input("Please set a server port: "))
-
-server = socket.create_server((host, port), family = socket.AF_INET)
 
 try:
-    server.listen()
+    
+    host = input("Please set server ip: ")
+    port = int(input("Please set a server port: "))
+    
+    host_type = type(ip_address(host))
+    
+    connections = []
 
-except socket.error as e:
-    print(f"Bind failed: {e}")
+    # checks host type against known ip addr types
+    if host_type == IPv4Address:
+        server = socket.create_server((host, port), family = socket.AF_INET, backlog = 2)
+        print("Server is up!!")
+    else:
+        server = socket.create_server((host, port), family = socket.AF_INET6, backlog = 2)
+        print("Server is up!!")
+    
+    print(f"\nWaiting to connect...")
+    
+    usernames = []
+
+    while(True):
+        conn, addr = server.accept()
+        connections.append(conn)
+        username = conn.recv(1024)
+        if username not in usernames:
+            usernames.append(username.decode(encoding="ascii", errors="xmlcharrefreplace"))
+            conn.sendall(b"GOOD")
+        else:
+            print(f"This username: {username.decode(encoding="ascii", errors="xmlcharrefreplace")} is taken.")
+            conn.sendall(b"TAKEN")
+        
+    
+except OSError as e:
+    print(f"Could not create server {e}")
+    sys.exit(1)
+except KeyboardInterrupt as e:
+    print("\nKeyboard Interrupt detected, shutting down server")
     sys.exit()
+except ValueError as e:
+    print(f"The above IP does not seem to be a valid IPv4 or IPv6, IP address please try again.")
+    sys.exit(1)
+except builtins.ConnectionRefusedError:
+    print(f"Connection Refused, it maybe down, or doesn't exist")
+    sys.exit(1)
