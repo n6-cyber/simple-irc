@@ -13,7 +13,7 @@ try:
     host = input("Please input the ip of the server you are connecting to: ")
     port = int(input("Please input the port of the server you are trying to connect to: "))
     
-    
+    # colors 
     RESET = "\033[0m"
     BOLD = "\033[1m"
     
@@ -58,6 +58,7 @@ try:
 
     print("Server is connected you can chat now!")
 
+    # listens to msg from server, listener function
     def listener(connect, mask):
         msg = connect.recv(16384)
         msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
@@ -68,7 +69,8 @@ try:
             sel.unregister(connect)
             connect.close()
             sys.exit()
-
+    
+    # sends msgs to server, writer function
     def writer(stdin, mask):
         chat = stdin.readline()
         if chat:
