@@ -16,28 +16,67 @@ try:
     port = int(input("Please set a server port: "))
     
     host_type = type(ip_address(host))
-
-    # usernames moved up for easier reach tbh
+    
     connections = []
     usernames = []
 
     sel = selectors.DefaultSelector()
-    
+
     # checks host type against known ip addr types
     if host_type == IPv4Address:
         server = socket.create_server((host, port), family = socket.AF_INET, backlog = 2)
         print("Server is up!!")
     else:
         server = socket.create_server((host, port), family = socket.AF_INET6, backlog = 2)
-        print("Server is up!!")
+        print("Server is up!!") 
     
+    # accept username/general accept function
+    def accept(sock, mask):
+        # appends new connection
+        conn, addr = sock.accept()
+        connections.append(conn)
+        print("A Client has connected")
+
+        # recieves usernames
+        username = conn.recv(1024)
+        username = username.decode(encoding="ascii", errors="xmlcharrefreplace")
+
+        if username not in usernames:
+            usernames.append(username)
+            conn.sendall(b"GOOD")
+
+            conn.setblocking(False)
+            sel.register(conn, selectors.EVENT_READ, read_msg)
+        else:
+            print(username)
+            conn.sendall(b"TAKEN")
+
+    def read_msg(conn, mask):
+        msg = conn.recv(16384)
+        if msg:
+            for client in connections:
+                if client != conn:
+                    client.sendall(msg)
+
+        else:
+            print("A client has disconnected")
+            sel.unregister(conn)
+            conn.close()
+            connections.remove(conn)
+
+    server.setblocking(False)
+    sel.register(server, selectors.EVENT_READ, accept)
+
     print(f"\nWaiting to connect...")
 
-    # removed username code temp, working on a function instead
     while True:
-        pass
-        
-    
+        events = sel.select()
+        for log, mask in events:
+            callback = log.data
+            callback(log.fileobj, mask)
+
+   
+# bunch of error handling (idk why im leaving comments anymore)
 except OSError as e:
     print(f"Could not create server {e}")
     sys.exit(1)
