@@ -6,14 +6,15 @@ chat apps etc. This is the simple IRC client script. anyways
 import socket
 import sys
 import builtins
-import multiprocessing
+import threading  
 
 try:
     
     host = input("Please input the ip of the server you are connecting to: ")
     port = int(input("Please input the port of the server you are trying to connect to: "))
-
-    socket.setdefaulttimeout(15)
+    
+    threads = []
+ 
     connect = socket.create_connection((host, port))
     print(f"Connected to server on: {host}:{port}")
     
@@ -32,9 +33,18 @@ try:
 
     print("Server is connected you can chat now!")
 
-    while(True):
-        chat = input(f"\n{user}: ")
-        bytes_chat = chat.encode(encoding="ascii", errors="xmlcharrefreplace") 
+    def listener(connect):
+        connect.recv(16384)
+
+    thread_1 = threading.Thread(target=listener, args=(connect, ))
+    threads.append(thread_1)
+    thread_1.start()
+
+    while True:
+        chat = input(f"{user}: ")
+        chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
+        connect.sendall(chat_bytes)
+        
 
 except OSError as e:
     print(f"An error has occured, shutting down server: {e}")
