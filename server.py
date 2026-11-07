@@ -18,9 +18,10 @@ try:
     
     clients = {}
 
+    
     RESET = "\033[0m"
     BOLD = "\033[1m"
-    
+
     RED = "\033[31m"
     YELLOW = "\033[33m"
     ORANGE = "\033[38;5;208m"
