@@ -9,25 +9,56 @@ import builtins
 import selectors  
 
 try:
+
+    color_enabled = input("Would you prefer colours on or off(on/off): ").strip().lower()
+    while color_enabled not in ("on", "enable", "enabled", "y", "yes", "true", "off", "n", "no", "false", "disabled", "disable"):
+        color_enabled = input("Invalid Choice, input 'on' or 'off': ").strip().lower()
     
     host = input("Please input the ip of the server you are connecting to: ")
     port = int(input("Please input the port of the server you are trying to connect to: "))
     
-    # colors 
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
+    if color_enabled in ("on", "enable", "enabled", "y", "yes", "true"):
+        RESET = "\033[0m"
+        BOLD = "\033[1m"
     
-    RED = "\033[31m"
-    YELLOW = "\033[33m"
-    ORANGE = "\033[38;5;208m"
-    GREEN = "\033[32m"
-    BLUE = "\033[34m"
-    PURPLE = "\033[35m"
-    PINK = "\033[38;5;213m"
-    GREY = "\033[90m"
-    BLACK = "\033[30m"
-    WHITE = "\033[37m"
+        RED = "\033[31m"
+        YELLOW = "\033[33m"
+        ORANGE = "\033[38;5;208m"
+        GREEN = "\033[32m"
+        BLUE = "\033[34m"
+        PURPLE = "\033[35m"
+        PINK = "\033[38;5;213m"
+        GREY = "\033[90m"
+        BLACK = "\033[30m"
+        WHITE = "\033[37m"
 
+        color = input(f"""Set a color you want to use for your username, ({RED}Red{RESET}, {YELLOW}Yellow{RESET}, {ORANGE}Orange{RESET}, {GREEN}Green{RESET}, {BLUE}Blue{RESET}, {PURPLE}Purple{RESET}, {PINK}Pink{RESET}, {GREY}Grey{RESET}, {BLACK}Black{RESET}, or {WHITE}White{RESET}): """).strip().lower()
+
+        color_map = {
+            "red": RED, "yellow": YELLOW, "orange": ORANGE, "green": GREEN, "blue": BLUE,
+            "purple": PURPLE, "pink": PINK, "grey": GREY, "black": BLACK, "white": WHITE,
+        }
+
+        while color not in color_map:
+            color = input(f"""Please choose a color listed: ({RED}Red{RESET}, {YELLOW}Yellow{RESET}, {ORANGE}Orange{RESET}, {GREEN}Green{RESET}, {BLUE}Blue{RESET}, {PURPLE}Purple{RESET}, {PINK}Pink{RESET}, {GREY}Grey{RESET}, {BLACK}Black{RESET}, or {WHITE}White{RESET}): """).strip().lower()
+        color = color_map[color]
+    
+    else:
+        color = ""
+        RESET = "\033[0m"
+        BOLD = "\033[1m"
+
+        RED = ""
+        YELLOW = ""
+        ORANGE =""
+        GREEN = ""
+        BLUE = ""
+        PURPLE = ""
+        PINK = ""
+        GREY = ""
+        BLACK = ""
+        WHITE = ""
+                    
     sel = selectors.DefaultSelector()
     
     socket.setdefaulttimeout(15)
