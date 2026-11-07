@@ -17,8 +17,7 @@ try:
     
     host_type = type(ip_address(host))
     
-    connections = []
-    usernames = []
+    clients = {}
 
     sel = selectors.DefaultSelector()
 
@@ -34,15 +33,14 @@ try:
     def accept(sock, mask):
         # appends new connection
         conn, addr = sock.accept()
-        connections.append(conn)
         print("A Client has connected")
 
         # recieves usernames
         username = conn.recv(1024)
         username = username.decode(encoding="ascii", errors="xmlcharrefreplace")
 
-        if username not in usernames:
-            usernames.append(username)
+        if username not in clients.values():
+            clients[conn] = username
             conn.sendall(b"GOOD")
 
             conn.setblocking(False)
@@ -54,15 +52,19 @@ try:
     def read_msg(conn, mask):
         msg = conn.recv(16384)
         if msg:
-            for client in connections:
+
+            user = clients.get(conn)
+            user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
+
+            for client in clients.keys():
                 if client != conn:
-                    client.sendall(msg)
+                    client.sendall(user + msg)
 
         else:
             print("A client has disconnected")
             sel.unregister(conn)
             conn.close()
-            connections.remove(conn)
+            clients.pop(conn, None)
 
     server.setblocking(False)
     sel.register(server, selectors.EVENT_READ, accept)
