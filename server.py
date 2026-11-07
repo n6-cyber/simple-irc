@@ -23,10 +23,10 @@ try:
 
     # checks host type against known ip addr types
     if host_type == IPv4Address:
-        server = socket.create_server((host, port), family = socket.AF_INET, backlog = 2)
+        server = socket.create_server((host, port), family = socket.AF_INET)
         print("Server is up!!")
     else:
-        server = socket.create_server((host, port), family = socket.AF_INET6, backlog = 2)
+        server = socket.create_server((host, port), family = socket.AF_INET6)
         print("Server is up!!") 
     
     # accept username/general accept function
@@ -35,42 +35,79 @@ try:
         conn, addr = sock.accept()
         print("A Client has connected")
         
-        while True:
+        conn.setblocking(False)
+        sel.register(conn, selectors.EVENT_READ, check_username)
+    
+    # check username function
+    def check_username(conn, mask):
+        try:
             username_bytes = conn.recv(1024)
-            if not username_bytes:
-                conn.close()
+
+        except OSError:
+            print("Client Disconnected")
+            drop_client(conn)
+            return
+        
+        if not username_bytes:
+            drop_client(conn)
+            return
+
+        username = username_bytes.decode(encoding="ascii", errors="xmlcharrefreplace")
+
+        if username in clients.values():
+            print(username)
+            try:
+                conn.sendall(b"TAKEN")
+            except OSError:
+                print("The client may have disconnected")
+                drop_client(conn)
+            return
+
+        clients[conn] = username
+        try:
+            conn.sendall(b"GOOD")
+        except OSError:
+            print("The client may have disconnected")
+            drop_client(conn)
+
+        sel.modify(conn, selectors.EVENT_READ, read_msg)
+    
+    # drop client helper function
+    def drop_client(conn):
+        try:
+            sel.unregister(conn)
+        except ValueError:
+            print("This connection may have been dropped already")
+        except KeyError:
+            print("This connection may have been dropped already")
+
+        conn.close()
+        clients.pop(conn, None)
+
+    # read / distibute client msgs
+    def read_msg(conn, mask):
+        try:
+            msg = conn.recv(16384)
+            if msg:
+                user = clients.get(conn)
+                user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
+                for client in list(clients):
+                    if client != conn:
+                        try:
+                            client.sendall(user + b": " + msg)
+                        except OSError:
+                            print("Dropping Reciever, Someone Disconnected")
+                            drop_client(client)
+            
+            else:
+                print("Client has Disconnected")
+                drop_client(conn)
                 return
 
-            username = username_bytes.decode(encoding="ascii", errors="xmlcharrefreplace")
-
-            if username not in clients.values():
-                clients[conn] = username
-                conn.sendall(b"GOOD")
-                break
-
-            else:
-                print(username)
-                conn.sendall(b"TAKEN")
-            
-        conn.setblocking(False)
-        sel.register(conn, selectors.EVENT_READ, read_msg)
-
-
-    def read_msg(conn, mask):
-        msg = conn.recv(16384)
-        if msg:
-            user = clients.get(conn)
-            user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
-            for client in clients.keys():
-                if client != conn:
-                    client.sendall(user + b": " + msg)
-
-        else:
+        except OSError:
             print("A Client has disconnected")
-            sel.unregister(conn)
-            conn.close()
-            clients.pop(conn, None)
-
+            drop_client(conn)
+        
     server.setblocking(False)
     sel.register(server, selectors.EVENT_READ, accept)
 
@@ -87,12 +124,9 @@ try:
 except OSError as e:
     print(f"Could not create server {e}")
     sys.exit(1)
-except KeyboardInterrupt as e:
+except KeyboardInterrupt:
     print("\nKeyboard Interrupt detected, shutting down server")
     sys.exit()
 except ValueError as e:
-    print(f"The above IP does not seem to be a valid IPv4 or IPv6, IP address please try again.")
-    sys.exit(1)
-except builtins.ConnectionRefusedError:
-    print(f"Connection Refused, it maybe down, or doesn't exist")
+    print(f"Maybe you inputted the wrong value: {e}")
     sys.exit(1)
