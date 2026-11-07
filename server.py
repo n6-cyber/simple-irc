@@ -26,7 +26,7 @@ try:
     ORANGE = "\033[38;5;208m"
     GREEN = "\033[32m"
     BLUE = "\033[34m"
-    PURPLE = \033[35m"
+    PURPLE = "\033[35m"
     PINK = "\033[38;5;213m"
     GREY = "\033[90m"
     BLACK = "\033[30m"
