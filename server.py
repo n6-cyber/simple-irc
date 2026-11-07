@@ -34,34 +34,39 @@ try:
         # appends new connection
         conn, addr = sock.accept()
         print("A Client has connected")
+        
+        while True:
+            username_bytes = conn.recv(1024)
+            if not username_bytes:
+                conn.close()
+                return
 
-        # recieves usernames
-        username = conn.recv(1024)
-        username = username.decode(encoding="ascii", errors="xmlcharrefreplace")
+            username = username_bytes.decode(encoding="ascii", errors="xmlcharrefreplace")
 
-        if username not in clients.values():
-            clients[conn] = username
-            conn.sendall(b"GOOD")
+            if username not in clients.values():
+                clients[conn] = username
+                conn.sendall(b"GOOD")
+                break
 
-            conn.setblocking(False)
-            sel.register(conn, selectors.EVENT_READ, read_msg)
-        else:
-            print(username)
-            conn.sendall(b"TAKEN")
+            else:
+                print(username)
+                conn.sendall(b"TAKEN")
+            
+        conn.setblocking(False)
+        sel.register(conn, selectors.EVENT_READ, read_msg)
+
 
     def read_msg(conn, mask):
         msg = conn.recv(16384)
         if msg:
-
             user = clients.get(conn)
             user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
-
             for client in clients.keys():
                 if client != conn:
-                    client.sendall(user + msg)
+                    client.sendall(user + b": " + msg)
 
         else:
-            print("A client has disconnected")
+            print("A Client has disconnected")
             sel.unregister(conn)
             conn.close()
             clients.pop(conn, None)
