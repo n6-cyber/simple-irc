@@ -63,31 +63,40 @@ try:
     
     socket.setdefaulttimeout(15)
     connect = socket.create_connection((host, port))
-    print(f"Connected to server on: {host}:{port}")
+    print(f"{GREEN}Connected to server on:{RESET} {BLUE}{host}{RESET}:{RED}{port}{RESET}")
     
-    user = input("\nPlease create a user name: ").strip()
+    user = input(f"\n{GREEN}Please create a user name: ").strip()
     while not user:
-        user = input("Please create a username: ").strip()
-        
+        user = input(f"{GREEN}Please create a username: ").strip()
+    if color:
+        user = f"{color}{user}{RESET}"
+    else:
+        user = user
+
     bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
     connect.sendall(bytes_user)
     back = connect.recv(1024)
     returned = back.decode(encoding="ascii", errors="xmlcharrefreplace")
 
     if returned == "GOOD":
-        print("All good, username accepted!")
+        print(f"{GREEN}All good, username accepted!")
     else:
-        print("Sorry try a different one!")
+        print(f"{RED}Sorry try a different one!")
         while returned != "GOOD":
-            user = input("Please create a username: ").strip()
+            user = input(f"{GREEN}Please create a username: ").strip()
             while not user:
-                user = input("Please create a username: ").strip()
+                user = input(f"{GREEN}Please create a username: ").strip()
+            if color:
+                user = f"{color}{user}{RESET}"
+            else:
+                user = user
+
             bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
             connect.sendall(bytes_user)
             back = connect.recv(1024)
             returned = back.decode(encoding="ascii", errors="xmlcharrefreplace")
 
-    print("Server is connected you can chat now!")
+    print(f"{ORANGE}Server is connected you can chat now!")
 
     # listens to msg from server, listener function
     def listener(connect, mask):
@@ -96,7 +105,7 @@ try:
         if msg:
             print(f"\r\033[K{msg}")
         else:
-            print("\nDisconnected from server")
+            print(f"\n{RED}Disconnected from server")
             sel.unregister(connect)
             connect.close()
             sys.exit()
@@ -112,7 +121,7 @@ try:
                 chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
                 connect.sendall(chat_bytes)
         else:
-            print("\nExiting Client")
+            print(f"\n{RED}Exiting Client")
             sys.exit()
 
     connect.setblocking(False)
@@ -129,13 +138,14 @@ try:
             print(f"{user}: ", end="", flush=True)
 
 except OSError as e:
-    print(f"An error has occured, shutting down server: {e}")
+    print(f"{RED}An error has occured, shutting down client: {e}")
     sys.exit(1)
 
 except KeyboardInterrupt:
-    print("\nShutting down/Quitting Client")
+    print(f"{RED}\nShutting down/Quitting Client")
     sys.exit(0)
 
 except ValueError as e:
-    print(f"Maybe you misspelled something, {e}")
+    print(f"{RED}Maybe you misspelled something, {e}")
     sys.exit(1)
+
