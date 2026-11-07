@@ -8,6 +8,7 @@ import socket
 from ipaddress import ip_address, IPv4Address, IPv6Address
 import sys
 import builtins
+import select
 
 
 try:
