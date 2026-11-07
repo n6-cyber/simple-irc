@@ -8,8 +8,7 @@ import socket
 from ipaddress import ip_address, IPv4Address, IPv6Address
 import sys
 import builtins
-import select
-
+import selectors
 
 try:
     
@@ -17,9 +16,13 @@ try:
     port = int(input("Please set a server port: "))
     
     host_type = type(ip_address(host))
-    
-    connections = []
 
+    # usernames moved up for easier reach tbh
+    connections = []
+    usernames = []
+
+    sel = selectors.DefaultSelector()
+    
     # checks host type against known ip addr types
     if host_type == IPv4Address:
         server = socket.create_server((host, port), family = socket.AF_INET, backlog = 2)
@@ -29,19 +32,10 @@ try:
         print("Server is up!!")
     
     print(f"\nWaiting to connect...")
-    
-    usernames = []
 
-    while(True):
-        conn, addr = server.accept()
-        connections.append(conn)
-        username = conn.recv(1024)
-        if username not in usernames:
-            usernames.append(username.decode(encoding="ascii", errors="xmlcharrefreplace"))
-            conn.sendall(b"GOOD")
-        else:
-            print(f"This username: {username.decode(encoding="ascii", errors="xmlcharrefreplace")} is taken.")
-            conn.sendall(b"TAKEN")
+    # removed username code temp, working on a function instead
+    while True:
+        pass
         
     
 except OSError as e:
