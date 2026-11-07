@@ -42,7 +42,7 @@ try:
         msg = connect.recv(16384)
         msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
         if msg:
-            print(f"\n{msg}")
+            print(f"\r\033[K{msg}")
         else:
             print("\nDisconnected from server")
             sel.unregister(connect)
@@ -71,7 +71,6 @@ try:
             callback = log.data
             callback(log.fileobj, mask)
             print(f"{user}: ", end="", flush=True)
-        
 
 except OSError as e:
     print(f"An error has occured, shutting down server: {e}")
