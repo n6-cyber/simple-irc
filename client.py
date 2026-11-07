@@ -6,15 +6,16 @@ chat apps etc. This is the simple IRC client script. anyways
 import socket
 import sys
 import builtins
-import threading  
+import selectors  
 
 try:
     
     host = input("Please input the ip of the server you are connecting to: ")
     port = int(input("Please input the port of the server you are trying to connect to: "))
     
-    threads = []
- 
+    sel = selectors.DefaultSelector()
+    
+    socket.setdefaulttimeout(15)
     connect = socket.create_connection((host, port))
     print(f"Connected to server on: {host}:{port}")
     
@@ -30,20 +31,46 @@ try:
         print("Sorry try a different one!")
         while returned != "GOOD":
             user = input("Please create a username: ")
+            bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
+            connect.sendall(bytes_user)
+            back = connect.recv(1024)
+            returned = back.decode(encoding="ascii", errors="xmlcharrefreplace")
 
     print("Server is connected you can chat now!")
 
-    def listener(connect):
-        connect.recv(16384)
+    def listener(connect, mask):
+        msg = connect.recv(16384)
+        msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
+        if msg:
+            print(f"\n{msg}")
+        else:
+            print("\nDisconnected from server")
+            sel.unregister(connect)
+            connect.close()
+            sys.exit()
 
-    thread_1 = threading.Thread(target=listener, args=(connect, ))
-    threads.append(thread_1)
-    thread_1.start()
+    def writer(stdin, mask):
+        chat = stdin.readline()
+        if chat:
+
+            chat = chat.strip()
+            
+            if chat:
+                chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
+                connect.sendall(chat_bytes)
+
+    connect.setblocking(False)
+    sel.register(connect, selectors.EVENT_READ, listener)
+    sel.register(sys.stdin, selectors.EVENT_READ, writer)
+    
+    print(f"{user}: ", end="", flush=True)
 
     while True:
-        chat = input(f"{user}: ")
-        chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
-        connect.sendall(chat_bytes)
+        events = sel.select()
+        for log, mask in events:
+            callback = log.data
+            callback(log.fileobj, mask)
+            print(f"{user}: ", end="", flush=True)
         
 
 except OSError as e:
