@@ -13,14 +13,32 @@ try:
     host = input("Please input the ip of the server you are connecting to: ")
     port = int(input("Please input the port of the server you are trying to connect to: "))
     
+    
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    
+    RED = "\033[31m"
+    YELLOW = "\033[33m"
+    ORANGE = "\033[38;5;208m"
+    GREEN = "\033[32m"
+    BLUE = "\033[34m"
+    PURPLE = "\033[35m"
+    PINK = "\033[38;5;213m"
+    GREY = "\033[90m"
+    BLACK = "\033[30m"
+    WHITE = "\033[37m"
+
     sel = selectors.DefaultSelector()
     
     socket.setdefaulttimeout(15)
     connect = socket.create_connection((host, port))
     print(f"Connected to server on: {host}:{port}")
     
-    user = input("\nPlease create a user name: ")
-    bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace") 
+    user = input("\nPlease create a user name: ").strip()
+    while not user:
+        user = input("Please create a username: ").strip()
+        
+    bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
     connect.sendall(bytes_user)
     back = connect.recv(1024)
     returned = back.decode(encoding="ascii", errors="xmlcharrefreplace")
@@ -30,7 +48,9 @@ try:
     else:
         print("Sorry try a different one!")
         while returned != "GOOD":
-            user = input("Please create a username: ")
+            user = input("Please create a username: ").strip()
+            while not user:
+                user = input("Please create a username: ").strip()
             bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
             connect.sendall(bytes_user)
             back = connect.recv(1024)
@@ -58,6 +78,9 @@ try:
             if chat:
                 chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
                 connect.sendall(chat_bytes)
+        else:
+            print("\nExiting Client")
+            sys.exit()
 
     connect.setblocking(False)
     sel.register(connect, selectors.EVENT_READ, listener)
