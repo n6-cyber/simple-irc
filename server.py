@@ -7,7 +7,6 @@ I'm just playing around learning how things communicate over networks.
 import socket
 from ipaddress import ip_address, IPv4Address, IPv6Address
 import sys
-import builtins
 import selectors
 
 try:
@@ -19,8 +18,21 @@ try:
     
     clients = {}
 
-    sel = selectors.DefaultSelector()
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    
+    RED = "\033[31m"
+    YELLOW = "\033[33m"
+    ORANGE = "\033[38;5;208m"
+    GREEN = "\033[32m"
+    BLUE = "\033[34m"
+    PURPLE = \033[35m"
+    PINK = "\033[38;5;213m"
+    GREY = "\033[90m"
+    BLACK = "\033[30m"
+    WHITE = "\033[37m"
 
+    sel = selectors.DefaultSelector()
     # checks host type against known ip addr types
     if host_type == IPv4Address:
         server = socket.create_server((host, port), family = socket.AF_INET)
@@ -69,6 +81,7 @@ try:
         except OSError:
             print("The client may have disconnected")
             drop_client(conn)
+            return
 
         sel.modify(conn, selectors.EVENT_READ, read_msg)
     
