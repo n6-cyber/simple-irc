@@ -8,17 +8,13 @@ import socket
 from ipaddress import ip_address, IPv4Address, IPv6Address
 import sys
 import selectors
+import mimetypes
+import hashlib
+from collections import deque
 
 try:
     
-    host = input("Please set server ip: ")
-    port = int(input("Please set a server port: "))
-    
-    host_type = type(ip_address(host))
-    
-    clients = {}
-
-    
+    # colors
     RESET = "\033[0m"
     BOLD = "\033[1m"
 
@@ -33,20 +29,27 @@ try:
     BLACK = "\033[30m"
     WHITE = "\033[37m"
 
+    host = input(f"{GREEN}Please set server ip:{RESET} ")
+    port = int(input(f"{GREEN}Please set a server port:{RESET} "))
+    
+    host_type = type(ip_address(host))
+    
+    clients = {}
+
     sel = selectors.DefaultSelector()
     # checks host type against known ip addr types
     if host_type == IPv4Address:
         server = socket.create_server((host, port), family = socket.AF_INET)
-        print("Server is up!!")
+        print(f"{GREEN}Server is up!!")
     else:
         server = socket.create_server((host, port), family = socket.AF_INET6)
-        print("Server is up!!") 
+        print(f"{GREEN}Server is up!!") 
     
     # accept username/general accept function
     def accept(sock, mask):
         # appends new connection
         conn, addr = sock.accept()
-        print("A Client has connected")
+        print(f"{GREEN}A Client has connected")
         
         conn.setblocking(False)
         sel.register(conn, selectors.EVENT_READ, check_username)
@@ -57,7 +60,7 @@ try:
             username_bytes = conn.recv(1024)
 
         except OSError:
-            print("Client Disconnected")
+            print(f"{RED}A Client Disconnected")
             drop_client(conn)
             return
         
@@ -72,7 +75,7 @@ try:
             try:
                 conn.sendall(b"TAKEN")
             except OSError:
-                print("The client may have disconnected")
+                print(f"{ORANGE}The client may have disconnected")
                 drop_client(conn)
             return
 
@@ -80,7 +83,7 @@ try:
         try:
             conn.sendall(b"GOOD")
         except OSError:
-            print("The client may have disconnected")
+            print(f"{ORANGE}The client may have disconnected")
             drop_client(conn)
             return
 
@@ -91,9 +94,9 @@ try:
         try:
             sel.unregister(conn)
         except ValueError:
-            print("This connection may have been dropped already")
+            print(f"{RED}This connection may have been dropped already")
         except KeyError:
-            print("This connection may have been dropped already")
+            print(f"{RED}This connection may have been dropped already")
 
         conn.close()
         clients.pop(conn, None)
@@ -110,22 +113,22 @@ try:
                         try:
                             client.sendall(user + b": " + msg)
                         except OSError:
-                            print("Dropping Reciever, Someone Disconnected")
+                            print(f"{RED}Dropping Reciever, Someone Disconnected")
                             drop_client(client)
             
             else:
-                print("Client has Disconnected")
+                print(f"{RED}A Client has Disconnected")
                 drop_client(conn)
                 return
 
         except OSError:
-            print("A Client has disconnected")
+            print(f"{RED}A Client has Disconnected")
             drop_client(conn)
         
     server.setblocking(False)
     sel.register(server, selectors.EVENT_READ, accept)
 
-    print(f"\nWaiting to connect...")
+    print(f"{YELLOW}\nWaiting to connect...")
 
     while True:
         events = sel.select()
@@ -136,11 +139,11 @@ try:
    
 # bunch of error handling (idk why im leaving comments anymore)
 except OSError as e:
-    print(f"Could not create server {e}")
+    print(f"{RED}Could not create server {e}")
     sys.exit(1)
 except KeyboardInterrupt:
-    print("\nKeyboard Interrupt detected, shutting down server")
+    print(f"\n{ORANGE}Keyboard Interrupt detected, shutting down server")
     sys.exit()
 except ValueError as e:
-    print(f"Maybe you inputted the wrong value: {e}")
+    print(f"{RED}Maybe you inputted the wrong value: {e}")
     sys.exit(1)

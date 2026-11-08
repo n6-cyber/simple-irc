@@ -6,7 +6,8 @@ chat apps etc. This is the simple IRC client script. anyways
 import socket
 import sys
 import builtins
-import selectors  
+import selectors
+import re
 
 try:
 
@@ -97,19 +98,56 @@ try:
             returned = back.decode(encoding="ascii", errors="xmlcharrefreplace")
 
     print(f"{ORANGE}Server is connected you can chat now!")
+    
+    def inline_color(chat, color_map, reset=RESET):
+        pattern = r'(red|yellow|orange|green|blue|purple|pink|grey|black|white)"([^"]+)"'
+
+        def add_color(match):
+            color_name = match.group(1).lower()
+            sentence = match.group(2)
+            text_color = color_map.get(color_name, "")
+            return f"{text_color}{sentence}{reset}"
+
+        return re.sub(pattern, add_color, chat)
 
     # listens to msg from server, listener function
     def listener(connect, mask):
         msg = connect.recv(16384)
         msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
         if msg:
+
             print(f"\r\033[K{msg}")
+
         else:
             print(f"\n{RED}Disconnected from server")
             sel.unregister(connect)
             connect.close()
             sys.exit()
-    
+   
+    # checks if a cmd was entered
+    def cmd_check(msg):
+        if msg == "/exit":
+            print(f"\n{ORANGE}Exiting Client")
+            sys.exit()
+        elif msg == "/clear":
+            print(f"\033[2J\033[H", end="")
+            return True
+        
+        elif msg == "/help":
+            print(f"=" * 30 + f"{RED} HELP {RESET}" + ("=" * 30) + "\n")
+            print(f"{BLUE}  Currently Implemented Commands:{RESET}\n")
+            print(f"{BLUE} '/clear' -- clears chat (client side){RESET}")
+            print(f"{RED} '/exit' -- exits client{RESET}")
+            print(f"{PINK} '/help' -- shows list of commands{RESET}\n")
+            print(f"=" * 30 + f"{RED} HELP {RESET}" + ("=" * 30))
+            return True
+
+        elif msg.startswith("/"):
+            print(f"{ORANGE}Unrecognized Command do '{RESET}{PINK}/help{RESET}{ORANGE}' to list of commands{RESET}")
+            return True
+       
+        return False
+
     # sends msgs to server, writer function
     def writer(stdin, mask):
         chat = stdin.readline()
@@ -118,6 +156,12 @@ try:
             chat = chat.strip()
             
             if chat:
+                
+                if cmd_check(chat):
+                    return
+
+                chat = inline_color(chat, color_map)
+
                 chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
                 connect.sendall(chat_bytes)
         else:
@@ -142,7 +186,7 @@ except OSError as e:
     sys.exit(1)
 
 except KeyboardInterrupt:
-    print(f"{RED}\nShutting down/Quitting Client")
+    print(f"\nShutting down/Quitting Client")
     sys.exit(0)
 
 except ValueError as e:
