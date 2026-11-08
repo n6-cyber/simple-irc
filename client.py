@@ -59,13 +59,31 @@ try:
         GREY = ""
         BLACK = ""
         WHITE = ""
+        
+        # added color map here to stop errors from inline_color() functions inner function
+        color_map = {
+            "red": "", "yellow": "", "orange": "", "green": "", "blue": "",
+            "purple": "", "pink": "", "grey": "", "black": "", "white": "",
+        }
                     
     sel = selectors.DefaultSelector()
-    
-    socket.setdefaulttimeout(15)
+
     connect = socket.create_connection((host, port))
     print(f"{GREEN}Connected to server on:{RESET} {BLUE}{host}{RESET}:{RED}{port}{RESET}")
-    
+
+    # recvs one line stops reading after first \n
+    def recv_line(conn):
+        buffer = bytearray()
+        while True:
+            byte = conn.recv(1)
+            if not byte:
+                break
+            buffer.extend(byte)
+            if byte == b"\n":
+                break
+        return buffer.decode(encoding="ascii", errors="xmlcharrefreplace").strip()
+
+
     user = input(f"\n{GREEN}Please create a user name: ").strip()
     while not user:
         user = input(f"{GREEN}Please create a username: ").strip()
@@ -76,8 +94,8 @@ try:
 
     bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
     connect.sendall(bytes_user)
-    back = connect.recv(1024)
-    returned = back.decode(encoding="ascii", errors="xmlcharrefreplace")
+
+    returned = recv_line(connect)
 
     if returned == "GOOD":
         print(f"{GREEN}All good, username accepted!")
@@ -94,8 +112,7 @@ try:
 
             bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
             connect.sendall(bytes_user)
-            back = connect.recv(1024)
-            returned = back.decode(encoding="ascii", errors="xmlcharrefreplace")
+            returned = recv_line(connect)
 
     print(f"{ORANGE}Server is connected you can chat now!")
     
@@ -116,14 +133,14 @@ try:
         msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
         if msg:
 
-            print(f"\r\033[K{msg}")
+            print(f"\r\033[K{msg}", end="", flush=True)
 
         else:
             print(f"\n{RED}Disconnected from server")
             sel.unregister(connect)
             connect.close()
             sys.exit()
-   
+
     # checks if a cmd was entered
     def cmd_check(msg):
         if msg == "/exit":

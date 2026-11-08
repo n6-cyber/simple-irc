@@ -10,6 +10,7 @@ import sys
 import selectors
 import mimetypes
 import hashlib
+import datetime
 from collections import deque
 
 try:
@@ -34,6 +35,8 @@ try:
     
     host_type = type(ip_address(host))
     
+    history = deque(maxlen=50)
+
     clients = {}
 
     sel = selectors.DefaultSelector()
@@ -43,8 +46,8 @@ try:
         print(f"{GREEN}Server is up!!")
     else:
         server = socket.create_server((host, port), family = socket.AF_INET6)
-        print(f"{GREEN}Server is up!!") 
-    
+        print(f"{GREEN}Server is up!!")
+
     # accept username/general accept function
     def accept(sock, mask):
         # appends new connection
@@ -73,7 +76,7 @@ try:
         if username in clients.values():
             print(username)
             try:
-                conn.sendall(b"TAKEN")
+                conn.sendall(b"TAKEN\n")
             except OSError:
                 print(f"{ORANGE}The client may have disconnected")
                 drop_client(conn)
@@ -81,7 +84,10 @@ try:
 
         clients[conn] = username
         try:
-            conn.sendall(b"GOOD")
+            conn.sendall(b"GOOD\n")
+            for line in history:
+                conn.sendall(line)
+
         except OSError:
             print(f"{ORANGE}The client may have disconnected")
             drop_client(conn)
@@ -108,10 +114,16 @@ try:
             if msg:
                 user = clients.get(conn)
                 user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
+                
+                time = datetime.datetime.now().strftime("%H:%M")
+                time = time.encode(encoding="ascii", errors="xmlcharrefreplace")
+                msg = b"[" + time + b"]" + user + b": " + msg
+                history.append(msg + b"\n")
+
                 for client in list(clients):
                     if client != conn:
                         try:
-                            client.sendall(user + b": " + msg)
+                            client.sendall(msg + b"\n")
                         except OSError:
                             print(f"{RED}Dropping Reciever, Someone Disconnected")
                             drop_client(client)
