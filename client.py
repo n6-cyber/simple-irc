@@ -12,12 +12,12 @@ import datetime
 
 try:
 
-    color_enabled = input("Would you prefer colours on or off(on/off): ").strip().lower()
+    color_enabled = input("Would you prefer colours on or off(on/off): ").strip().lower() or "yes"
     while color_enabled not in ("on", "enable", "enabled", "y", "yes", "true", "off", "n", "no", "false", "disabled", "disable"):
         color_enabled = input("Invalid Choice, input 'on' or 'off': ").strip().lower()
     
-    host = input("Please input the ip of the server you are connecting to: ")
-    port = int(input("Please input the port of the server you are trying to connect to: "))
+    host = input("Please input the ip of the server you are connecting to [default: 127.0.0.1]: ") or "127.0.0.1"
+    port = int(input("Please input the port of the server you are trying to connect to [default: 6667]: ") or "6667")
     
     if color_enabled in ("on", "enable", "enabled", "y", "yes", "true"):
         RESET = "\033[0m"
@@ -34,7 +34,7 @@ try:
         BLACK = "\033[30m"
         WHITE = "\033[37m"
 
-        color = input(f"""Set a color you want to use for your username, ({RED}Red{RESET}, {YELLOW}Yellow{RESET}, {ORANGE}Orange{RESET}, {GREEN}Green{RESET}, {BLUE}Blue{RESET}, {PURPLE}Purple{RESET}, {PINK}Pink{RESET}, {GREY}Grey{RESET}, {BLACK}Black{RESET}, or {WHITE}White{RESET}): """).strip().lower()
+        color = input(f"""Set a color you want to use for your username, ({RED}Red{RESET}, {YELLOW}Yellow{RESET}, {ORANGE}Orange{RESET}, {GREEN}Green{RESET}, {BLUE}Blue{RESET}, {PURPLE}Purple{RESET}, {PINK}Pink{RESET}, {GREY}Grey{RESET}, {BLACK}Black{RESET}, or {WHITE}White{RESET}): """).strip().lower() or f"{WHITE}"
 
         color_map = {
             "red": RED, "yellow": YELLOW, "orange": ORANGE, "green": GREEN, "blue": BLUE,
