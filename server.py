@@ -103,7 +103,32 @@ try:
             print(f"{RED}This connection may have been dropped already")
         except KeyError:
             print(f"{RED}This connection may have been dropped already")
+        
+        dropping_user = clients.get(conn)
+        if dropping_user:
+            dropping_bytes = dropping_user.encode(encoding="ascii", errors="xmlcharrefreplace")
 
+            try:
+                for client in list(clients):
+                    if client != conn:
+                        client.sendall(b"User: " + dropping_bytes + b" disconnected\n")
+            except OSError:
+                print(f"{RED}Dropping Reciever, Someone Disconnected?")
+                
+                try:
+                    sel.unregister(client)
+                except ValueError:
+                    print(f"{RED}This connection may have been dropped already")
+                except KeyError:
+                    print(f"{RED}This connection may have been dropped already")
+                conn.close()
+                clients.pop(client, None)
+
+    
+        else:
+            print(f"{ORANGE}User may not have entered user name")
+            conn.close()
+            clients.pop(conn, None)
         conn.close()
         clients.pop(conn, None)
 
@@ -117,7 +142,7 @@ try:
                 
                 time = datetime.datetime.now().strftime("%H:%M")
                 time = time.encode(encoding="ascii", errors="xmlcharrefreplace")
-                msg = b"[" + time + b"]" + user + b": " + msg
+                msg = user + b"[" + time + b"]" + b": " + msg
                 history.append(msg + b"\n")
 
                 for client in list(clients):

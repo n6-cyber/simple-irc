@@ -8,6 +8,7 @@ import sys
 import builtins
 import selectors
 import re
+import datetime
 
 try:
 
@@ -180,6 +181,7 @@ try:
                 chat = inline_color(chat, color_map)
 
                 chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
+
                 connect.sendall(chat_bytes)
         else:
             print(f"\n{RED}Exiting Client")
@@ -189,14 +191,16 @@ try:
     sel.register(connect, selectors.EVENT_READ, listener)
     sel.register(sys.stdin, selectors.EVENT_READ, writer)
     
-    print(f"{user}: ", end="", flush=True)
+    time = datetime.datetime.now().strftime("%H:%M")
+    print(f"{user}[{time}]: ", end="", flush=True)
 
     while True:
         events = sel.select()
         for log, mask in events:
             callback = log.data
             callback(log.fileobj, mask)
-            print(f"{user}: ", end="", flush=True)
+            time = datetime.datetime.now().strftime("%H:%M")
+            print(f"{user}[{time}]: ", end="", flush=True)
 
 except OSError as e:
     print(f"{RED}An error has occured, shutting down client: {e}")
