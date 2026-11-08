@@ -30,12 +30,12 @@ try:
     BLACK = "\033[30m"
     WHITE = "\033[37m"
 
-    host = input(f"{GREEN}Please set server ip:{RESET} ")
-    port = int(input(f"{GREEN}Please set a server port:{RESET} "))
+    host = input(f"{GREEN}Please set server ip [default: 127.0.0.1]:{RESET} ") or "127.0.0.1"
+    port = int(input(f"{GREEN}Please set a server port [default: 6667]:{RESET} ") or "6667")
     
     host_type = type(ip_address(host))
     
-    history = deque(maxlen=50)
+    history = deque(maxlen=10) # default is 10 change to whatever u like
 
     clients = {}
 
@@ -103,26 +103,27 @@ try:
             print(f"{RED}This connection may have been dropped already")
         except KeyError:
             print(f"{RED}This connection may have been dropped already")
-        
+
         dropping_user = clients.get(conn)
+        
         if dropping_user:
             dropping_bytes = dropping_user.encode(encoding="ascii", errors="xmlcharrefreplace")
 
-            try:
-                for client in list(clients):
-                    if client != conn:
+            for client in list(clients):
+                if client != conn:
+                    try:
                         client.sendall(b"User: " + dropping_bytes + b" disconnected\n")
-            except OSError:
-                print(f"{RED}Dropping Reciever, Someone Disconnected?")
+                    except OSError:
+                        print(f"{RED}Dropping Reciever, Someone Disconnected?")
                 
-                try:
-                    sel.unregister(client)
-                except ValueError:
-                    print(f"{RED}This connection may have been dropped already")
-                except KeyError:
-                    print(f"{RED}This connection may have been dropped already")
-                conn.close()
-                clients.pop(client, None)
+                        try:
+                            sel.unregister(client)
+                        except ValueError:
+                            print(f"{RED}This connection may have been dropped already")
+                        except KeyError:
+                            print(f"{RED}This connection may have been dropped already")
+                        client.close()
+                        clients.pop(client, None)
 
     
         else:
