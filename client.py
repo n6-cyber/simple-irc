@@ -118,11 +118,11 @@ try:
     print(f"{ORANGE}Server is connected you can chat now!")
     
     def inline_color(chat, color_map, reset=RESET):
-        pattern = r'(red|yellow|orange|green|blue|purple|pink|grey|black|white)"([^"\']+)"'
+        pattern = r'(red|yellow|orange|green|blue|purple|pink|grey|black|white)(["\'])([^"\']+)\2' 
 
         def add_color(match):
             color_name = match.group(1).lower()
-            sentence = match.group(2)
+            sentence = match.group(3)
             text_color = color_map.get(color_name, "")
             return f"{text_color}{sentence}{reset}"
 
