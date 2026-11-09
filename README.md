@@ -1,5 +1,5 @@
 # simple-irc
-This is a simple irc repo, its a IRC sorta, it's completely human written, it's definitely not secure at the moment at least, and it's just to help me learn how irc and chats in general work! Well more like for me to learn how networks interact w/ applications. 
+This is a simple irc repo, its a IRC sorta, it's completely human written (but AI was used for fact checking and reference and like documentation) i was to lazy to google documentation, it's definitely not secure at the moment at least, and it's just to help me learn how irc and chats in general work! Well more like for me to learn how networks interact w/ applications. 
 
 ## FEATURES (or bugs depends)
 - **Private Messages (`/msg <username> <msg>`):** send to people, doesn't work if ur missing `/msg <username> or <msg>`
