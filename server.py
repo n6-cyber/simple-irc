@@ -8,10 +8,9 @@ import socket
 from ipaddress import ip_address, IPv4Address, IPv6Address
 import sys
 import selectors
-import mimetypes
-import hashlib
 import datetime
 from collections import deque
+import re
 
 try:
     
@@ -56,7 +55,15 @@ try:
         
         conn.setblocking(False)
         sel.register(conn, selectors.EVENT_READ, check_username)
-    
+
+    # strips username color so bob[blue] is the same as bob[red]
+    def remove_color(user):
+        color = re.compile(r'\033\[[0-9;]*m')
+
+        user = re.sub(color, "", user)
+        return user
+
+
     # check username function
     def check_username(conn, mask):
         try:
@@ -72,17 +79,18 @@ try:
             return
 
         username = username_bytes.decode(encoding="ascii", errors="xmlcharrefreplace")
-
-        if username in clients.values():
-            print(username)
+        nocolor_user = remove_color(username)
+        
+        # updated now data structure gets username from a list
+        if nocolor_user in (user[1] for user in clients.values()):
             try:
                 conn.sendall(b"TAKEN\n")
             except OSError:
                 print(f"{ORANGE}The client may have disconnected")
                 drop_client(conn)
-            return
+            return 
 
-        clients[conn] = username
+        clients[conn] = [username, nocolor_user]
         try:
             conn.sendall(b"GOOD\n")
             for line in history:
@@ -104,9 +112,10 @@ try:
         except KeyError:
             print(f"{RED}This connection may have been dropped already")
 
-        dropping_user = clients.get(conn)
+        user = clients.get(conn)
         
-        if dropping_user:
+        if user:
+            dropping_user = user[0]
             dropping_bytes = dropping_user.encode(encoding="ascii", errors="xmlcharrefreplace")
 
             for client in list(clients):
@@ -139,6 +148,7 @@ try:
             msg = conn.recv(16384)
             if msg:
                 user = clients.get(conn)
+                user = user[0]
                 user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
                 
                 time = datetime.datetime.now().strftime("%H:%M")
