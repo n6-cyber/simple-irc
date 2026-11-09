@@ -16,8 +16,8 @@ import re
 
 try:
     
-    # colors
-    RESET = "\033[0m"
+    # colors 
+    RESET = "\033[0m" # reset 
     BOLD = "\033[1m"
 
     RED = "\033[31m"

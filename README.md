@@ -11,6 +11,10 @@ This is a simple irc repo, its a IRC sorta, it's completely human written, it's 
 ## BUG FIXES (bugs i fixed)
 - fixed error where users coloured users were treated as seperate usernames
 - fixed error where clients would not recieve user: X disconnected messages
+- changed `client.py` to use both double quote and single quote in inline color annotation
+- fixed indent error on writer(), human error man ;(
+- fixed issue where if msg over byte limit client that recieved would not display it properly cutting of the msg early
+-
 - fixed some other issues too, again let me know if there are any issues u discovered and open an issue idc if u use my thing or not i like my project so ill keep it good
 
 ## Work in Progress aka [WIP] wont be added anytime soon (BRO I HATE MARKDOWN SO SO SO MUCH)
@@ -54,4 +58,4 @@ at start of the week so i don't rush as much don't like being
 this tight but thanks! id appreciate comments on what i can do
 to find documentation easier since i spent more time searching things
 up then i could code for so yea but thanks anyways.
-P.S. more like note to self I hope to god that my project is MVP ok, and that this ships but for a first project it's all like it depends so yea. 
+P.S. more like note to self I hope to god that my project is MVP ok, and that this ships but for a first project it's all like it depends so yea
