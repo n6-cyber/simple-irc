@@ -18,7 +18,8 @@ try:
     
     host = input("Please input the ip of the server you are connecting to [default: 127.0.0.1]: ") or "127.0.0.1"
     port = int(input("Please input the port of the server you are trying to connect to [default: 6667]: ") or "6667")
-    
+   
+    # color declarations / check for color on or off + color map for later uses.
     if color_enabled in ("on", "enable", "enabled", "y", "yes", "true"):
         RESET = "\033[0m"
         BOLD = "\033[1m"
@@ -84,7 +85,7 @@ try:
                 break
         return buffer.decode(encoding="ascii", errors="xmlcharrefreplace").strip()
 
-
+    # get username and color
     user = input(f"\n{GREEN}Please create a user name: ").strip()
     while not user:
         user = input(f"{GREEN}Please create a username: ").strip()
@@ -95,9 +96,10 @@ try:
 
     bytes_user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
     connect.sendall(bytes_user)
-
+    
     returned = recv_line(connect)
-
+    
+    # checks returned status code
     if returned == "GOOD":
         print(f"{GREEN}All good, username accepted!")
     else:
@@ -117,9 +119,11 @@ try:
 
     print(f"{ORANGE}Server is connected you can chat now!")
     
+    # checks for the format color"sentence i want in x color" also accepts '' <-- single quotes
     def inline_color(chat, color_map, reset=RESET):
         pattern = r'(red|yellow|orange|green|blue|purple|pink|grey|black|white)(["\'])([^"\']+)\2' 
-
+        
+        # returns sentence / section denoted to be color in said color
         def add_color(match):
             color_name = match.group(1).lower()
             sentence = match.group(3)
@@ -127,22 +131,34 @@ try:
             return f"{text_color}{sentence}{reset}"
 
         return re.sub(pattern, add_color, chat)
+    
+    # byte array to store recv'd msgs
+    buf = bytearray()
 
     # listens to msg from server, listener function
     def listener(connect, mask):
-        msg = connect.recv(16384)
-        msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
-        if msg:
-
-            print(f"\r\033[K{msg}", end="", flush=True)
-
-        else:
+        try:
+            msg = connect.recv(16384)
+        except OSError as e:
+            print(f"{RED}Connection lost?: {e}")
+            sys.exit(1)
+        if not msg:
             print(f"\n{RED}Disconnected from server")
             sel.unregister(connect)
             connect.close()
             sys.exit()
 
-    # checks if a cmd was entered
+        buf.extend(msg)
+        while True:
+            b = buf.find(b"\n")
+            if b == -1:
+                break
+            msg = buf[:b]
+            del buf[:b + 1]
+            msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
+            print(f"\r\033[K{msg}", end="\n", flush=True)
+
+    # checks if a cmd was entered / completes corrisponding actions
     def cmd_check(msg):
         if msg == "/exit":
             print(f"\n{ORANGE}Exiting Client")
@@ -175,14 +191,20 @@ try:
             
             if chat:
                 
+                # checks for cmd
                 if cmd_check(chat):
                     return
-
+                # checks color
                 chat = inline_color(chat, color_map)
 
                 chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
-
+                
+            try:
                 connect.sendall(chat_bytes)
+            except OSError as e:
+                print(f"{RED}Error has occured {e}")
+
+
         else:
             print(f"\n{RED}Exiting Client")
             sys.exit()
@@ -202,6 +224,7 @@ try:
             time = datetime.datetime.now().strftime("%H:%M")
             print(f"{user}[{time}]: ", end="", flush=True)
 
+# error handling
 except OSError as e:
     print(f"{RED}An error has occured, shutting down client: {e}")
     sys.exit(1)

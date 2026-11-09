@@ -10,6 +10,9 @@ This is a simple irc repo, its a IRC sorta, it's completely human written, it's 
 - Server Wide Music Player
 - Frontend (CSS, HTML ONLY, cause JS is corprate slop)
 
+## KNOWN ISSUES
+- if a user sends msg and u had typed something before and not pressed enter, then when u write on next line it sends both what u typed before + what u typed now
+
 # Setup
 How to set up this server? Quite simple heres an example this is what you do:
     ```git clone https://github.com/n6-cyber/simple-irc.git
