@@ -199,10 +199,10 @@ try:
 
                 chat_bytes = chat.encode(encoding="ascii", errors="xmlcharrefreplace")
                 
-            try:
-                connect.sendall(chat_bytes)
-            except OSError as e:
-                print(f"{RED}Error has occured {e}")
+                try:
+                    connect.sendall(chat_bytes)
+                except OSError as e:
+                    print(f"{RED}Error has occured {e}")
 
 
         else:
