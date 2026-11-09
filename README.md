@@ -11,7 +11,7 @@ This is a simple irc repo, its a IRC sorta, it's completely human written, it's 
 ## BUG FIXES (bugs i fixed)
 - fixed error where users coloured users were treated as seperate usernames
 - fixed error where clients would not recieve user: X disconnected messages
-- fixed some other issues too
+- fixed some other issues too, again let me know if there are any issues u discovered and open an issue idc if u use my thing or not i like my project so ill keep it good
 
 ## Work in Progress aka [WIP] wont be added anytime soon (BRO I HATE MARKDOWN SO SO SO MUCH)
 - **E2E Encryption:** some form of message encryption.
@@ -27,6 +27,7 @@ This is a simple irc repo, its a IRC sorta, it's completely human written, it's 
 ## KNOWN ISSUES
 - if a user sends msg and u had typed something before and not pressed enter, then when u write on next line it sends both what u typed before + what u typed now
 - can not send coloured msgs through `/msg` cmd
+- please let me know if theres any other issues, i will try to fix them
 
 ## SETUP
 ```bash
@@ -53,3 +54,4 @@ at start of the week so i don't rush as much don't like being
 this tight but thanks! id appreciate comments on what i can do
 to find documentation easier since i spent more time searching things
 up then i could code for so yea but thanks anyways.
+P.S. more like note to self I hope to god that my project is MVP ok, and that this ships but for a first project it's all like it depends so yea. 
