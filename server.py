@@ -141,6 +141,13 @@ try:
             clients.pop(conn, None)
         conn.close()
         clients.pop(conn, None)
+    
+    # checks for msg cmd.
+    def msg_check(msg):
+        match = re.match(r"^/msg\s+(\S+)\s+(.+)$", msg)
+        if match:
+            return match.group(1), match.group(2)
+        return None, None
 
     # read / distibute client msgs
     def read_msg(conn, mask):
@@ -150,6 +157,40 @@ try:
                 user = clients.get(conn)
                 user = user[0]
                 user = user.encode(encoding="ascii", errors="xmlcharrefreplace")
+                
+                msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
+                priv_user, priv_msg = msg_check(msg)
+
+                if priv_user and priv_msg:
+                    priv_msg = priv_msg.encode(encoding="ascii", errors="xmlcharrefreplace")
+                    priv_msg = user + b" whispered you something: " +  priv_msg + b"\n"
+                    user_found = False
+                    for current_client, user in clients.items():
+                        if user[1] == priv_user:
+                            user_found = True
+                            if current_client == conn:
+                                conn.sendall(priv_msg)
+                                break
+                            else:
+                                try:
+                                    current_client.sendall(priv_msg)
+                                    conn.sendall(b"THEY RECIEVED IT MY DUDE!\n")
+                                except OSError as e:
+                                    print(f"Client may have disconnected: {e}")
+                                    drop_client(current_client)
+                                break
+
+                    if not user_found:
+                        priv_user = priv_user.encode(encoding="ascii", errors="xmlcharrefreplace")
+                        sorry = b"Sorry, user: " + priv_user + b" was NOT FOUND\n"
+                        try:
+                            conn.sendall(sorry)
+                        except OSError as e:
+                            print(f"Client may have disconnected: {e}")
+                            drop_client(conn)
+                    return
+                
+                msg = msg.encode(encoding="ascii", errors="xmlcharrefreplace")
                 
                 time = datetime.datetime.now().strftime("%H:%M")
                 time = time.encode(encoding="ascii", errors="xmlcharrefreplace")

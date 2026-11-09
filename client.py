@@ -157,7 +157,7 @@ try:
             del buf[:b + 1]
             msg = msg.decode(encoding="ascii", errors="xmlcharrefreplace")
             print(f"\r\033[K{msg}", end="\n", flush=True)
-
+    
     # checks if a cmd was entered / completes corrisponding actions
     def cmd_check(msg):
         if msg == "/exit":
@@ -172,9 +172,13 @@ try:
             print(f"{BLUE}  Currently Implemented Commands:{RESET}\n")
             print(f"{BLUE} '/clear' -- clears chat (client side){RESET}")
             print(f"{RED} '/exit' -- exits client{RESET}")
-            print(f"{PINK} '/help' -- shows list of commands{RESET}\n")
+            print(f"{PINK} '/help' -- shows list of commands{RESET}")
+            print(f"{ORANGE} '/msg <n_6 [example btw]> <wow i love this so much [example again]>' -- sends a private message to a user{RESET}\n")
             print(f"=" * 30 + f"{RED} HELP {RESET}" + ("=" * 30))
             return True
+        
+        elif msg.startswith("/msg"):
+            return False
 
         elif msg.startswith("/"):
             print(f"{ORANGE}Unrecognized Command do '{RESET}{PINK}/help{RESET}{ORANGE}' to list of commands{RESET}")
