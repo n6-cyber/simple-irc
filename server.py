@@ -1,7 +1,9 @@
 '''This is a simple IRC Chat Server, well more like its a chat / messaging client/server built in python,
 used between 2 known users. It's not much of an IRC chat, more like E2E chat, but its def not 
 as secure as any commercial or even opensource p2p / e2e chat app. So like it's just a lil project of mine 
-I'm just playing around learning how things communicate over networks.
+I'm just playing around learning how things communicate over networks. no encryption rn, don't know
+if that disqualifies me from terra but lets hope not!!! anyways i spammed out a bunch of code
+in the last for days def made me tenser then usual but i enjoyed trying this out lwk.
 - made by n_6, as a side project lwk.'''
 
 import socket
@@ -188,6 +190,18 @@ try:
                         except OSError as e:
                             print(f"Client may have disconnected: {e}")
                             drop_client(conn)
+                    return
+
+                if msg.strip() == "/users":
+                    users_online = (user[1] for user in clients.values())
+                    list_users = f"Users online rn: {', '.join(users_online)}\n"
+                    users_list = list_users.encode(encoding="ascii", errors="xmlcharrefreplace")
+
+                    try:
+                        conn.sendall(users_list)
+                    except OSError as e:
+                        print(f"Client may have disconnected: {e}")
+                        drop_client(conn)
                     return
                 
                 msg = msg.encode(encoding="ascii", errors="xmlcharrefreplace")

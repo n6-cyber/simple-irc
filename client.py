@@ -1,6 +1,6 @@
 '''This is a simple IRC kinda chat thing. I have a github so check that out, which i assume u already are
 but basically this is to help me learn a bit about network application communication, like messaging apps,
-chat apps etc. This is the simple IRC client script. anyways
+chat apps etc. This is the simple IRC client script. anyways i kinda rushed it a bit cause of terra but worked on a lot for 4 days 
 - made by n_6, as a side project lwk.'''
 
 import socket
@@ -173,10 +173,14 @@ try:
             print(f"{BLUE} '/clear' -- clears chat (client side){RESET}")
             print(f"{RED} '/exit' -- exits client{RESET}")
             print(f"{PINK} '/help' -- shows list of commands{RESET}")
+            print(f"{YELLOW} '/users' -- lists current users online{RESET}")
             print(f"{ORANGE} '/msg <n_6 [example btw]> <wow i love this so much [example again]>' -- sends a private message to a user{RESET}\n")
             print(f"=" * 30 + f"{RED} HELP {RESET}" + ("=" * 30))
             return True
-        
+       
+        elif msg == "/users":
+            return False
+
         elif msg.startswith("/msg"):
             return False
 
